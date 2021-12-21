@@ -2,8 +2,6 @@ from sys import excepthook
 from aiohttp import web
 from light import Light
 import bluepy
-import asyncio
-import functools
 
 routes = web.RouteTableDef()
 
@@ -11,27 +9,30 @@ routes = web.RouteTableDef()
 lights = {
     "room1": Light("FF:FF:A0:45:AA:A0"),
     "room2": Light("BE:FF:A0:04:B4:6F"),
+    "room3": Light("BE:FF:30:04:4A:C3"),
 }
 
 @routes.post("/update")
 async def handle_update_light(request):
     body = await request.json()
     room = body["room"]
-    method = body["method"]
+    state = body["state"]
 
     # TODO: investigate why the light just dies sometimes
     light = lights[room]
 
-    if method == "busy":
+    if state == "busy":
         light.set_busy()
         return web.json_response({
-            "message": "status changed to busy"
+            "message": "success",
+            "status": "busy",
         })
 
-    if method == "free":
+    if state == "free":
         light.set_free()
         return web.json_response({
-            "message": "status changed to free"
+            "message": "success",
+            "status": "free",
         })
 
     return web.json_response({
@@ -39,61 +40,48 @@ async def handle_update_light(request):
     })
 
 
-@routes.get("/status")
+@routes.post("/status")
 async def handle_index(request):
-    text = "Ok"
-  
-    return web.Response(text=text)
+    body = await request.json()
+    room = body["room"] 
+    return web.json_response({
+        "status": lights[room].get_state()
+    })
 
 
-async def lights_startup(app: web.Application):
-    print("Connecting to lights...")
-
-    loop = asyncio.get_running_loop()
-
-    def setup_light(light):
+async def initialize_lights(app: web.Application):
+    def create_light(light):
         try:
-            print("Pairing to and setting up light with address", light.address)
             light.setup()
         except bluepy.btle.BTLEDisconnectError as ex:
-            print("Failed to connect to light", light.address)
-
+            print("Failed to connect to light", light.address, "on interface", light.interface)
+            # just try again recursively 
+            create_light(light)
         except Exception as exc:
             print("Unknown exception:", exc)
-        else:
-            print("Connected to light with address", light.address, "successfully")
-
-    results = []
 
     for light in lights.values():
-        # results.append(loop.run_in_executor(None, functools.partial(setup_light, light)))d
-        setup_light(light)
+        create_light(light)
 
-    #await asyncio.wait(results, timeout=0.5)
-
-async def lights_shutdown(app: web.Application):
+async def destroy_lights(app: web.Application):
     print("Disconnecting lights...")
-    loop = asyncio.get_running_loop()
-
     def destroy_light(light):
         print("Disconnecting from light with address", light.address)
-        
-        # Only lights with a peripherals are properly connected
-        if hasattr(light, 'peripheral'):
+        if light and hasattr(light, "peripheral"):
             light.disconnect()
 
-    results = []
-
     for light in lights.values():
-        results.append(loop.run_in_executor(None, functools.partial(destroy_light, light)))
+        destroy_light(light)
 
-    await asyncio.wait(results, timeout=1.5)
 
 app = web.Application()
+
+routes.static("/", "./static")
 app.add_routes(routes)
+
 # Connect web server startup & shutdown to light connection/disconnection
-app.on_startup.append(lights_startup)
-app.on_shutdown.append(lights_shutdown)
+app.on_startup.append(initialize_lights)
+app.on_shutdown.append(destroy_lights)
 
 if __name__ == "__main__":
     web.run_app(app)

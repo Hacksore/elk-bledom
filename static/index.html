@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Light Control</title>
+  <script src="js/uikit.min.js"></script>
+  <script src="js/main.js"></script>
+  <link rel="stylesheet" href="css/uikit.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <div class="uk-section uk-background-secondary">
+    <div class="uk-container">
+
+      <div class="uk-grid-match uk-child-width-1-4@m" uk-grid>
+        <div>
+          <h2>Status <span id="status">loading...</span></h2>
+          <button class="uk-button uk-button-default busy" onclick="setStatus('busy')">Busy</button>
+          <button class="uk-button uk-button-default free" onclick="setStatus('free')">Free</button>
+        </div>
+    
+      </div>
+      <div class="uk-grid-match uk-child-width-1-4@m" uk-grid>
+        <div>
+          <h2>Room 1</h2>
+          TODO
+        </div>
+        <div>
+          <h2>Room 2</h2>
+          TODO
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
