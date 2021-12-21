@@ -3,6 +3,7 @@ from aiohttp import web
 from light import Light
 import bluepy
 import asyncio
+import functools
 
 routes = web.RouteTableDef()
 
@@ -45,30 +46,54 @@ async def handle_index(request):
     return web.Response(text=text)
 
 
-async def setup_lights(app: web.Application):
-    print("connecting to lights...")
+async def lights_startup(app: web.Application):
+    print("Connecting to lights...")
+
     loop = asyncio.get_running_loop()
+
+    def setup_light(light):
+        try:
+            print("Pairing to and setting up light with address", light.address)
+            light.setup()
+        except bluepy.btle.BTLEDisconnectError as ex:
+            print("Failed to connect to light", light.address)
+
+        except Exception as exc:
+            print("Unknown exception:", exc)
+        else:
+            print("Connected to light with address", light.address, "successfully")
+
     results = []
 
     for light in lights.values():
-        try:
-            print("pairing to light", light.address)
-            
-            result = await loop.run_in_executor(
-                None, light.setup)
-            results.append(result)
+        # results.append(loop.run_in_executor(None, functools.partial(setup_light, light)))d
+        setup_light(light)
 
-            print("default thread pool", result)
+    #await asyncio.wait(results, timeout=0.5)
 
+async def lights_shutdown(app: web.Application):
+    print("Disconnecting lights...")
+    loop = asyncio.get_running_loop()
 
-        except bluepy.btle.BTLEDisconnectError as ex: 
-            print("failed to connect to light", light.address)            
+    def destroy_light(light):
+        print("Disconnecting from light with address", light.address)
+        
+        # Only lights with a peripherals are properly connected
+        if hasattr(light, 'peripheral'):
+            light.disconnect()
 
-    await asyncio.gather(results)
+    results = []
+
+    for light in lights.values():
+        results.append(loop.run_in_executor(None, functools.partial(destroy_light, light)))
+
+    await asyncio.wait(results, timeout=1.5)
 
 app = web.Application()
 app.add_routes(routes)
-app.on_startup.append(setup_lights)
+# Connect web server startup & shutdown to light connection/disconnection
+app.on_startup.append(lights_startup)
+app.on_shutdown.append(lights_shutdown)
 
 if __name__ == "__main__":
     web.run_app(app)
