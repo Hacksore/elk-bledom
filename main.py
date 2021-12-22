@@ -2,6 +2,7 @@ from sys import excepthook
 from aiohttp import web
 from light import Light
 import bluepy
+import time
 
 routes = web.RouteTableDef()
 
@@ -61,6 +62,7 @@ async def initialize_lights(app: web.Application):
             print("Unknown exception:", exc)
 
     for light in lights.values():
+        time.sleep(2)
         create_light(light)
 
 async def destroy_lights(app: web.Application):

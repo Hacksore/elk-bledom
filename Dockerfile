@@ -1,10 +1,10 @@
-FROM ubuntu:18.04
+FROM debian:latest
 USER root
 
 WORKDIR /app
 COPY . /app
 
-RUN apt update && apt install bluez python3-pip -y
+RUN apt update && apt install libglib2.0-dev bluez python3-pip -y
 
 RUN pip3 install -r requirements.txt
 
