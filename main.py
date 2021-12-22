@@ -6,7 +6,7 @@ import time
 
 routes = web.RouteTableDef()
 
-# TODO: make sure to handle reconnecting
+# TODO: allow this to be configurable
 lights = {
     "room1": Light("FF:FF:A0:45:AA:A0"),
     "room2": Light("BE:FF:A0:04:B4:6F"),
