@@ -1,4 +1,3 @@
-from aiohttp import web
 from light import Light
 import bluepy
 import threading
@@ -83,7 +82,7 @@ def initialize_lights():
         create_light(light)
 
 
-def destroy_lights(app: web.Application):
+def destroy_lights():
     def destroy_light(light):
         print("Disconnecting from light with address", light.address)
         if light and hasattr(light, "peripheral"):
@@ -96,3 +95,6 @@ def destroy_lights(app: web.Application):
 # start light thread
 light_thread = threading.Thread(target=initialize_lights)
 light_thread.start()
+
+if __name__ == "__main__":
+    app.run(debug=False)

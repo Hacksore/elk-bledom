@@ -17,4 +17,6 @@ RUN apt update && apt install libglib2.0-dev bluez python3-pip -y
 
 RUN pip3 install -r requirements.txt
 
-CMD ["gunicorn" , "-b", "0.0.0.0:8080", "main:main"]
+ENV FLASK_APP=app
+
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "app"]

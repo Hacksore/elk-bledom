@@ -1,4 +1,6 @@
 build:
-	docker build -t hacksore/elk-bledom .
+	docker buildx build -t hacksore/elk-bledom --platform linux/arm/v7 .
+push:
+	docker push hacksore/elk-bledom
 test:
-	docker run --cap-add=SYS_ADMIN --cap-add=NET_ADMIN --net=host -p 8080:8080 hacksore/elk-bledom
+	docker run --cap-add=SYS_ADMIN --cap-add=NET_ADMIN --net=host hacksore/elk-bledom
