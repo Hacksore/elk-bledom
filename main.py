@@ -1,21 +1,24 @@
-from sys import excepthook
 from aiohttp import web
 from light import Light
 import bluepy
-import time
+import threading
+from flask import Flask, jsonify, request
 
-routes = web.RouteTableDef()
+app = Flask(__name__)
 
 # TODO: allow this to be configurable
 lights = {
     "room1": Light("FF:FF:A0:45:AA:A0"),
     "room2": Light("BE:FF:A0:04:B4:6F"),
     "room3": Light("BE:FF:30:04:4A:C3"),
+    # "room0": Light("BE:FF:30:04:4A:C4"),
 }
 
-@routes.post("/update")
-async def handle_update_light(request):
-    body = await request.json()
+
+@app.route("/api/update", methods=["POST"])
+def handle_update_light():
+    body = request.json
+    print(body)
     room = body["room"]
     state = body["state"]
 
@@ -24,49 +27,63 @@ async def handle_update_light(request):
 
     if state == "busy":
         light.set_busy()
-        return web.json_response({
-            "message": "success",
-            "status": "busy",
-        })
+        return jsonify(
+            {
+                "message": "success",
+                "status": "busy",
+            }
+        )
 
     if state == "free":
         light.set_free()
-        return web.json_response({
-            "message": "success",
-            "status": "free",
-        })
+        return jsonify(
+            {
+                "message": "success",
+                "status": "free",
+            }
+        )
 
-    return web.json_response({
-        "error": "Shit didnt go as planned"
-    })
-
-
-@routes.post("/status")
-async def handle_index(request):
-    body = await request.json()
-    room = body["room"] 
-    return web.json_response({
-        "status": lights[room].get_state()
-    })
+    return jsonify({"error": "Shit didnt go as planned"})
 
 
-async def initialize_lights(app: web.Application):
+@app.route("/api/status", methods=["POST"])
+def handle_status():
+    body = request.json
+    room = body["room"]
+    return jsonify({"status": lights[room].get_state()})
+
+
+@app.route("/api/status/all", methods=["GET"])
+def handle_all_status():
+    return jsonify(
+        [
+            {"state": value.state, "name": room, "connected": value.connected}
+            for (room, value) in lights.items()
+        ]
+    )
+
+
+def initialize_lights():
     def create_light(light):
         try:
             light.setup()
         except bluepy.btle.BTLEDisconnectError as ex:
-            print("Failed to connect to light", light.address, "on interface", light.interface)
-            # just try again recursively 
+            print(
+                "Failed to connect to light",
+                light.address,
+                "on interface",
+                light.interface,
+            )
+            # just try again recursively
             create_light(light)
         except Exception as exc:
             print("Unknown exception:", exc)
 
     for light in lights.values():
-        time.sleep(2)
         create_light(light)
 
-async def destroy_lights(app: web.Application):
-    print("Disconnecting lights...")
+
+def destroy_lights(app: web.Application):
     def destroy_light(light):
         print("Disconnecting from light with address", light.address)
         if light and hasattr(light, "peripheral"):
@@ -76,16 +93,6 @@ async def destroy_lights(app: web.Application):
         destroy_light(light)
 
 
-app = web.Application()
-
-routes.static("/", "./static")
-app.add_routes(routes)
-
-# Connect web server startup & shutdown to light connection/disconnection
-app.on_startup.append(initialize_lights)
-app.on_shutdown.append(destroy_lights)
-
-if __name__ == "__main__":
-    web.run_app(app)
-    
-    
+# start light thread
+light_thread = threading.Thread(target=initialize_lights)
+light_thread.start()

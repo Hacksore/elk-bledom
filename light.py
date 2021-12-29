@@ -6,6 +6,8 @@ import lightutil
 SERVICE_UUID = "0000fff0-0000-1000-8000-00805f9b34fb"
 CHARACTERISTIC_UUID = "0000fff3-0000-1000-8000-00805f9b34fb"
 
+MAX_CONNECTIONS = 20
+
 class Light:
     def __init__(self, address, interface=0):
         self.peripheral = None
@@ -13,13 +15,23 @@ class Light:
         self.address = address
         self.interface = interface
         self.state = None
+        self.connection_attempts = 0
+        self.connected = False
 
     def setup(self):
+        self.connection_attempts = self.connection_attempts + 1
+
+        # Don't attempt to connect if we reach max connections
+        if (self.connection_attempts >= MAX_CONNECTIONS):
+            return
+
         self.peripheral = Peripheral(self.address, iface=self.interface)
         self.service = self.peripheral.getServiceByUUID(SERVICE_UUID)
         self.device = self.service.getCharacteristics(CHARACTERISTIC_UUID)[0]
 
         print("Connected to light with address", self.address, "successfully")
+
+        self.connected = True
 
         self.set_free()
 
