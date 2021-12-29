@@ -1,9 +1,12 @@
 from light import Light
-import bluepy
+import os
 import threading
-from flask import Flask, jsonify, request
+import bluepy
+from flask import Flask, jsonify, request, send_from_directory
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static")
+
+print("starting the main server")
 
 # TODO: allow this to be configurable
 lights = {
@@ -17,7 +20,6 @@ lights = {
 @app.route("/api/update", methods=["POST"])
 def handle_update_light():
     body = request.json
-    print(body)
     room = body["room"]
     state = body["state"]
 
@@ -62,7 +64,18 @@ def handle_all_status():
     )
 
 
+# Serve React App
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + "/" + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, "index.html")
+
+
 def initialize_lights():
+    print("connecting to lights...")
     def create_light(light):
         try:
             light.setup()
@@ -92,9 +105,15 @@ def destroy_lights():
         destroy_light(light)
 
 
-# start light thread
-light_thread = threading.Thread(target=initialize_lights)
-light_thread.start()
-
 if __name__ == "__main__":
-    app.run(debug=False)
+
+    # light thread
+    light_thread = threading.Thread(target=initialize_lights)
+    light_thread.start()
+    
+    # start flask on new thread
+    flask_thread = threading.Thread(target = lambda: app.run(port=8080, host="0.0.0.0"))
+    flask_thread.start()
+
+    # join the light thread back to the main thread?
+    light_thread.join()
