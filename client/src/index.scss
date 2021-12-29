@@ -3,32 +3,61 @@ $primary-color: #333;
 
 $primary-text: #ffffff;
 
-body, html {
+$free-color: #59b84e;
+$busy-color: #d85151;
+
+body,
+html {
   font: 100% $font-stack;
   background: $primary-color;
+  color: $primary-text;
 }
 
 .btn {
   width: 200px;
   height: 60px;
   color: $primary-text;
+  font-weight: bold;
+  border-radius: 8px;
   border: 1px solid #3e3e3e;
   cursor: pointer;
   font-size: 30px;
+  background-color: rgb(35, 35, 35);
 
+  &:hover {
+    background: #171717;
+  }
+  
   &.busy {
-    background: #ce4343;
-
-    &:hover {
-      background: #bd3d3d;
-    }
+   border-bottom: 3px solid $busy-color;
   }
 
   &.free {
-    background: #59b84e;
+   border-bottom: 3px solid $free-color;
+  }
 
-    &:hover {
-      background: #52aa48
-    }
+}
+
+.room-selector {
+  margin: 12px 0 12px 0;
+  display: flex;
+  align-items: center;
+}
+
+.status {
+  border-radius: 8px;
+  margin-left: 20px;
+  display: flex;
+  font-weight: bold;
+  justify-content: center;
+  align-items: center;
+  width: 120px;
+  height: 40px;
+
+  &.busy {
+    background: $busy-color
+  }
+  &.free {
+    background: $free-color
   }
 }

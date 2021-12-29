@@ -2,7 +2,7 @@
   "name": "client",
   "version": "0.0.0",
   "scripts": {
-    "start": "vite dev",
+    "start": "vite dev --host 0.0.0.0",
     "build": "tsc && vite build"
   },
   "dependencies": {
