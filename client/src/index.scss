@@ -1,0 +1,34 @@
+$font-stack: Helvetica, sans-serif;
+$primary-color: #333;
+
+$primary-text: #ffffff;
+
+body, html {
+  font: 100% $font-stack;
+  background: $primary-color;
+}
+
+.btn {
+  width: 200px;
+  height: 60px;
+  color: $primary-text;
+  border: 1px solid #3e3e3e;
+  cursor: pointer;
+  font-size: 30px;
+
+  &.busy {
+    background: #ce4343;
+
+    &:hover {
+      background: #bd3d3d;
+    }
+  }
+
+  &.free {
+    background: #59b84e;
+
+    &:hover {
+      background: #52aa48
+    }
+  }
+}
