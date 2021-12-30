@@ -50,3 +50,14 @@ class Light:
         self.device.write(bytearray(lightutil.color("#10ff00")), withResponse=True)
         self.state = "free"
 
+    # write some junk data to see if it's alive or not
+    def ping(self):
+        if not self.connected:
+            return
+
+        try:
+            self.device.write(0, withResponse=True)
+        except:
+            print("failed to ping", self.address)
+            # self.state = "free"
+            # self.connected = False
