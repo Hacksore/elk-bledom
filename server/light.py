@@ -6,7 +6,7 @@ import lightutil
 SERVICE_UUID = "0000fff0-0000-1000-8000-00805f9b34fb"
 CHARACTERISTIC_UUID = "0000fff3-0000-1000-8000-00805f9b34fb"
 
-MAX_CONNECTIONS = 5
+MAX_CONNECTIONS = 20
 
 class Light:
     def __init__(self, address, interface=0):
@@ -44,12 +44,22 @@ class Light:
         return self.state
 
     def set_busy(self):
+        self.set_power(True)
+
         self.device.write(bytearray(lightutil.color("#FF0000")), withResponse=True)
         self.state = "busy"
 
     def set_free(self):
+        self.set_power(True)
+
         self.device.write(bytearray(lightutil.color("#10ff00")), withResponse=True)
         self.state = "free"
+
+    def set_power(self, power):
+        # 7e 00 04 is_on 00 00 00 00 ef
+        is_on = b"\x01" if power else b"\x00" 
+        packet = bytearray(b"\x7e\x00\x04" + is_on + b"\x00\x00\x00\x00\xef")
+        self.device.write(packet, withResponse=True)
 
     # write some junk data to see if it's alive or not
     def ping(self):

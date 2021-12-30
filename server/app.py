@@ -1,7 +1,6 @@
 from light import Light
 import os
 import threading
-import time
 import bluepy
 from flask import Flask, jsonify, request, send_from_directory
 
@@ -11,8 +10,6 @@ print("starting the main server")
 
 # TODO: allow this to be configurable
 lights = {
-    # this is fake and it should not block the app
-    "fake": Light("FF:FF:A0:45:AA:A0"),
     # this is too far away and it breaks the whole app
     "Sean": Light("FF:FF:A0:45:AA:A0"),
     "Dani": Light("BE:FF:A0:04:B4:6F"),
@@ -76,6 +73,15 @@ def handle_all_status():
     )
 
 
+@app.route("/api/powerOff", methods=["POST"])
+def handle_power_off():
+    for light in lights.values():
+        if light.connected:
+            light.set_power(False)
+
+    return jsonify({"status": "ok"})
+
+
 # Serve React App
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
@@ -103,6 +109,7 @@ def initialize_lights():
         # create_light(light)
         thread = threading.Thread(target=create_light, args=[light])
         thread.start()
+
 
 if __name__ == "__main__":
 
