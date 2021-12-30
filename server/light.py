@@ -6,7 +6,7 @@ import lightutil
 SERVICE_UUID = "0000fff0-0000-1000-8000-00805f9b34fb"
 CHARACTERISTIC_UUID = "0000fff3-0000-1000-8000-00805f9b34fb"
 
-MAX_CONNECTIONS = 20
+MAX_CONNECTIONS = 5
 
 class Light:
     def __init__(self, address, interface=0):
@@ -19,6 +19,7 @@ class Light:
         self.connected = False
 
     def setup(self):
+        print("attempt", str(self.connection_attempts))
         self.connection_attempts = self.connection_attempts + 1
 
         # Don't attempt to connect if we reach max connections

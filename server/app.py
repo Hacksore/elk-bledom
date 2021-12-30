@@ -11,9 +11,12 @@ print("starting the main server")
 
 # TODO: allow this to be configurable
 lights = {
-    "room1": Light("FF:FF:A0:45:AA:A0"),
-    "room2": Light("BE:FF:A0:04:B4:6F"),
-    "room3": Light("BE:FF:30:04:4A:C3"),
+    # this is fake and it should not block the app
+    "fake": Light("FF:FF:A0:45:AA:A0"),
+    # this is too far away and it breaks the whole app
+    "Sean": Light("FF:FF:A0:45:AA:A0"),
+    "Dani": Light("BE:FF:A0:04:B4:6F"),
+    "Test": Light("BE:FF:30:04:4A:C3"),
 }
 
 
@@ -89,52 +92,26 @@ def initialize_lights():
     def create_light(light):
         try:
             light.setup()
-        except bluepy.btle.BTLEDisconnectError as ex:
-            print(
-                "Failed to connect to light",
-                light.address,
-                "on interface",
-                light.interface,
-            )
+        except bluepy.btle.BTLEDisconnectError:
+            print("Failed to connect to light", light.address)
             # just try again recursively
             create_light(light)
         except Exception as exc:
             print("Unknown exception:", exc)
 
     for light in lights.values():
-        create_light(light)
-
-
-def destroy_lights():
-    def destroy_light(light):
-        print("Disconnecting from light with address", light.address)
-        if light and hasattr(light, "peripheral"):
-            light.disconnect()
-
-    for light in lights.values():
-        destroy_light(light)
-
-
-def keep_alive():
-    while True:
-        for light in lights.values():
-            light.ping()
-            time.sleep(1)
-        time.sleep(10)
-
+        # create_light(light)
+        thread = threading.Thread(target=create_light, args=[light])
+        thread.start()
 
 if __name__ == "__main__":
-
-    # keep alive
-    # light_keep_alive_thread = threading.Thread(target=keep_alive)
-    # light_keep_alive_thread.start()
 
     # light thread
     light_thread = threading.Thread(target=initialize_lights)
     light_thread.start()
 
     # start flask on new thread
-    flask_thread = threading.Thread(target=lambda: app.run(port=8080, host="0.0.0.0"))
+    flask_thread = threading.Thread(target=lambda: app.run(port=80, host="0.0.0.0"))
     flask_thread.start()
 
     # join the light thread back to the main thread?
