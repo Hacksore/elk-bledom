@@ -11,7 +11,7 @@ function App() {
     // long poll
     setInterval(() => {
       handleAllStatus();
-    }, 30 * 1000)
+    }, 30 * 1000);
   }, []);
 
   const handleAllStatus = async () => {
@@ -21,8 +21,14 @@ function App() {
 
   return (
     <div className="main">
-      <RoomSelector rooms={rooms} onStatusUpdate={handleAllStatus} id="room1" />
-      <RoomSelector rooms={rooms} onStatusUpdate={handleAllStatus} id="room2" />
+      {rooms.map((r: any) => (
+        r.connected && <RoomSelector key={r.name} rooms={rooms} onStatusUpdate={handleAllStatus} id={r.name} />
+      ))}
+
+      {rooms.length <= 0 && (
+        <h2>Can't connect to rooms</h2>
+      )}
+      <button className="small-btn" onClick={() => fetch("/api/restart", { method: "post" })}>Restart app</button>
     </div>
   );
 }

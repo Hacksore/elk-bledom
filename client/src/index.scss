@@ -38,6 +38,23 @@ html {
 
 }
 
+.small-btn {
+  width: 100px;
+  height: 40px;
+  color: $primary-text;
+  font-weight: bold;
+  border-radius: 8px;
+  border: 1px solid #3e3e3e;
+  margin-top: 26px;
+  cursor: pointer;
+  font-size: 15px;
+  background-color: #c45656;
+
+  &:hover {
+    background: #b34d4d;
+  }
+}
+
 .room-selector {
   margin: 12px 0 12px 0;
   display: flex;
@@ -52,7 +69,9 @@ html {
   justify-content: center;
   align-items: center;
   width: 120px;
-  height: 40px;
+  height: 46px;
+  font-size: 18px;
+  text-transform: uppercase;
 
   &.busy {
     background: $busy-color
