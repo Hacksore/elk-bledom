@@ -84,6 +84,10 @@ html {
   &.free {
     background: $free-color
   }
+
+  &.off {
+    background: #4b4b4b
+  }
 }
 
 hr {
