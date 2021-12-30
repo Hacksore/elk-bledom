@@ -60,6 +60,10 @@ class Light:
         packet = bytearray(b"\x7e\x00\x04" + is_on + b"\x00\x00\x00\x00\xef")
         self.device.write(packet, withResponse=True)
 
+        # set state to off
+        if not power:
+          self.state = "off"
+
     # write some junk data to see if it's alive or not
     def ping(self):
         if not self.connected:
