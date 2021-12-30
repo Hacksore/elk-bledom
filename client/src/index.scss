@@ -45,13 +45,18 @@ html {
   font-weight: bold;
   border-radius: 8px;
   border: 1px solid #3e3e3e;
+  background-color: #4b4b4b;
   margin-top: 26px;
   cursor: pointer;
   font-size: 15px;
-  background-color: #c45656;
 
-  &:hover {
-    background: #b34d4d;
+  margin-right: 10px;
+  &.restart {
+    background-color: #c45656;
+
+    &:hover {
+      background: #b34d4d;
+    }
   }
 }
 
@@ -79,4 +84,8 @@ html {
   &.free {
     background: $free-color
   }
+}
+
+hr {
+  border-color: rgb(77, 77, 77);
 }

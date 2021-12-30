@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import RoomSelector from "./components/roomSelector";
-import { getAllStatus, updateState } from "./service/lights";
+import { getAllStatus, powerAllOff } from "./service/lights";
 
 function App() {
   const [rooms, setRooms] = useState([]);
@@ -8,10 +8,10 @@ function App() {
   useEffect(() => {
     handleAllStatus();
 
-    // long poll
+    // long poll as sockets are kinda overkill here
     setInterval(() => {
       handleAllStatus();
-    }, 30 * 1000);
+    }, 10 * 1000);
   }, []);
 
   const handleAllStatus = async () => {
@@ -28,7 +28,10 @@ function App() {
       {rooms.length <= 0 && (
         <h2>Can't connect to rooms</h2>
       )}
-      <button className="small-btn" onClick={() => fetch("/api/restart", { method: "post" })}>Restart app</button>
+
+      <hr style={{ marginTop: 40 }} />
+      <button className="small-btn restart" onClick={() => fetch("/api/restart", { method: "post" })}>Restart</button>
+      <button className="small-btn" onClick={powerAllOff}>Power Off</button>
     </div>
   );
 }
