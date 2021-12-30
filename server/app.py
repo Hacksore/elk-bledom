@@ -1,6 +1,7 @@
 from light import Light
 import os
 import threading
+import time
 import bluepy
 from flask import Flask, jsonify, request, send_from_directory
 
@@ -13,7 +14,6 @@ lights = {
     "room1": Light("FF:FF:A0:45:AA:A0"),
     "room2": Light("BE:FF:A0:04:B4:6F"),
     "room3": Light("BE:FF:30:04:4A:C3"),
-    # "room0": Light("BE:FF:30:04:4A:C4"),
 }
 
 
@@ -51,7 +51,16 @@ def handle_update_light():
 def handle_status():
     body = request.json
     room = body["room"]
+
     return jsonify({"status": lights[room].get_state()})
+
+
+@app.route("/api/restart", methods=["POST"])
+def handle_restart():
+    shutdown_func = request.environ.get("werkzeug.server.shutdown")
+    if shutdown_func is None:
+        raise RuntimeError("Not running werkzeug")
+    shutdown_func()
 
 
 @app.route("/api/status/all", methods=["GET"])
@@ -76,6 +85,7 @@ def serve(path):
 
 def initialize_lights():
     print("connecting to lights...")
+
     def create_light(light):
         try:
             light.setup()
@@ -105,14 +115,26 @@ def destroy_lights():
         destroy_light(light)
 
 
+def keep_alive():
+    while True:
+        for light in lights.values():
+            light.ping()
+            time.sleep(1)
+        time.sleep(10)
+
+
 if __name__ == "__main__":
+
+    # keep alive
+    # light_keep_alive_thread = threading.Thread(target=keep_alive)
+    # light_keep_alive_thread.start()
 
     # light thread
     light_thread = threading.Thread(target=initialize_lights)
     light_thread.start()
-    
+
     # start flask on new thread
-    flask_thread = threading.Thread(target = lambda: app.run(port=8080, host="0.0.0.0"))
+    flask_thread = threading.Thread(target=lambda: app.run(port=8080, host="0.0.0.0"))
     flask_thread.start()
 
     # join the light thread back to the main thread?
