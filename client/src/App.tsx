@@ -21,17 +21,23 @@ function App() {
 
   return (
     <div className="main">
-      {rooms.map((r: any) => (
-        r.connected && <RoomSelector key={r.name} rooms={rooms} onStatusUpdate={handleAllStatus} id={r.name} />
-      ))}
-
-      {rooms.length <= 0 && (
-        <h2>Can't connect to rooms</h2>
+      {rooms.map(
+        (r: any) =>
+          r.connected && <RoomSelector key={r.name} rooms={rooms} onStatusUpdate={handleAllStatus} id={r.name} />
       )}
 
+      {rooms.length <= 0 && <h2>Can't connect to rooms</h2>}
+
       <hr style={{ marginTop: 40 }} />
-      <button className="small-btn restart" onClick={() => fetch("/api/restart", { method: "post" })}>Restart</button>
-      <button className="small-btn" onClick={powerAllOff}>Power Off</button>
+
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <button className="small-btn restart" onClick={() => fetch("/api/restart", { method: "post" })}>
+          Restart
+        </button>
+        <button className="small-btn" onClick={powerAllOff}>
+          Power Off
+        </button>
+      </div>
     </div>
   );
 }

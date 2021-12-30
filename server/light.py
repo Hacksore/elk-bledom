@@ -19,7 +19,6 @@ class Light:
         self.connected = False
 
     def setup(self):
-        print("attempt", str(self.connection_attempts))
         self.connection_attempts = self.connection_attempts + 1
 
         # Don't attempt to connect if we reach max connections
