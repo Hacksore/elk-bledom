@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import RoomSelector from "./components/roomSelector";
-import { getAllStatus, powerAllOff } from "./service/lights";
+import { getAllStatus, powerAllOff, updateState } from "./service/lights";
 
 function App() {
   const [rooms, setRooms] = useState([]);
@@ -34,7 +34,13 @@ function App() {
         <button className="small-btn restart" onClick={() => fetch("/api/restart", { method: "post" })}>
           Restart
         </button>
-        <button className="small-btn" onClick={powerAllOff}>
+        <button
+          className="small-btn"
+          onClick={async () => {
+            await powerAllOff();
+            handleAllStatus();
+          }}
+        >
           Power Off
         </button>
       </div>

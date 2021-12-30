@@ -1,13 +1,12 @@
 import { updateState } from "../service/lights";
 
-function RoomSelector({ id, rooms, onStatusUpdate }: { id: string, rooms: any, onStatusUpdate: Function }) {
-
+function RoomSelector({ id, rooms, onStatusUpdate }: { id: string; rooms: any; onStatusUpdate: Function }) {
   const room = rooms.find((item: any) => item.name === id);
 
   const handleClick = async (state: string) => {
     await updateState(id, state);
     onStatusUpdate();
-  }
+  };
 
   if (!room) {
     return null;
@@ -27,7 +26,6 @@ function RoomSelector({ id, rooms, onStatusUpdate }: { id: string, rooms: any, o
 
         <div className={`status ${room.state}`}>{room.state}</div>
       </div>
-
     </div>
   );
 }
